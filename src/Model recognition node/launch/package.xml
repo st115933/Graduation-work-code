@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>yolov8_bringup</name>
+  <version>0.0.0</version>
+  <description>YOLOv8 for ROS 2</description>
+  
+  <!-- 维护者信息 -->
+  <maintainer email="123@123.ru">123</maintainer>
+  
+  <!-- 许可证声明 -->
+  <license>License declaration</license>
+
+  <!-- 构建工具依赖 -->
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <!-- 测试依赖 -->
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <!-- 运行和构建依赖 -->
+  <depend>yolov8_ros</depend>
+
+  <!-- 导出信息 -->
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
