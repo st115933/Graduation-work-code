@@ -18,69 +18,110 @@ from yolov8_msgs.msg import Detection, DetectionArray
 
 class VisualizationNode(Node):
     def __init__(self):
-        super().__init__('visualization_Node')
-        # state
+        super().__init__('visualization_node')
+        # Node status initialization
         self.bridge = CvBridge()
-        self.class_color = {}
-        self.tolerance = 0.1  # seconds for matching
-        self.det_buffer = collections.deque(maxlen=10)
+        self.class_color = {}  
+        self.tolerance = 0.1   # Timestamp matching tolerance (seconds)
+        self.tracking_buffer = collections.deque(maxlen=10)  # Tracking result buffer
 
-        # pubs
+        # Create publishers
         self.pub_img = self.create_publisher(Image, 'dbg_image', 10)
         self.pub_bb = self.create_publisher(MarkerArray, 'dgb_bb_markers', 10)
         self.pub_kp = self.create_publisher(MarkerArray, 'dgb_kp_markers', 10)
 
-        # subs
-        self.create_subscription(Image, 'image_raw', self.on_image, qos_profile_sensor_data)
-        self.create_subscription(DetectionArray, 'detections', self.on_detections, 10)
+        # Create subscribers
+        self.create_subscription(
+            Image, 
+            'image_raw', 
+            self.on_image, 
+            qos_profile_sensor_data
+        )
+        self.create_subscription(
+            DetectionArray, 
+            'tracking', 
+            self.on_tracking, 
+            10
+        )
 
-    def on_detections(self, det_msg: DetectionArray):
-        # enqueue latest detections
-        self.det_buffer.append(det_msg)
+    def on_tracking(self, tracking_msg: DetectionArray):
+        """Process tracking result messages"""
+        # Add tracking results to the buffer
+        self.tracking_buffer.append(tracking_msg)
 
     def on_image(self, img_msg: Image):
-        if not self.det_buffer:
+        """Process image messages"""
+        if not self.tracking_buffer:
             return
-        # find best-matching detection by timestamp
+            
+        # Calculate image timestamp
         img_time = img_msg.header.stamp.sec + img_msg.header.stamp.nanosec * 1e-9
-        best = min(self.det_buffer, key=lambda d: abs((d.header.stamp.sec + d.header.stamp.nanosec * 1e-9) - img_time))
-        det_time = best.header.stamp.sec + best.header.stamp.nanosec * 1e-9
-        if abs(det_time - img_time) > self.tolerance:
+        
+        # Find the tracking result with the closest timestamp
+        best_tracking = min(
+            self.tracking_buffer, 
+            key=lambda t: abs((t.header.stamp.sec + t.header.stamp.nanosec * 1e-9) - img_time)
+        )
+        
+        # Check if the time difference is within tolerance
+        tracking_time = best_tracking.header.stamp.sec + best_tracking.header.stamp.nanosec * 1e-9
+        if abs(tracking_time - img_time) > self.tolerance:
             return
-        self.process_pair(img_msg, best)
+            
+        # Process the image and tracking result pair
+        self.process_pair(img_msg, best_tracking)
 
-    def process_pair(self, img_msg: Image, det_msg: DetectionArray):
+    def process_pair(self, img_msg: Image, tracking_msg: DetectionArray):
+        """Process the image and corresponding tracking results"""
+        # Convert image format
         cv_img = self.bridge.imgmsg_to_cv2(img_msg)
         annot = Annotator(cv_img)
+        
+        # Initialize marker arrays
         bb_markers = MarkerArray()
         kp_markers = MarkerArray()
-
-        for det in det_msg.detections:
-            cls = det.class_name
+        
+        # Process each tracked object
+        for track in tracking_msg.detections:
+            cls = track.class_name
+            
+            # Assign a unique color to each class
             if cls not in self.class_color:
                 self.class_color[cls] = tuple(random.choices(range(256), k=3))
             col = self.class_color[cls]
-            # draw box + label
-            x, y, w, h = (det.bbox.center.position.x, det.bbox.center.position.y,
-                          det.bbox.size.x, det.bbox.size.y)
+            
+            # Extract bounding box information
+            x, y, w, h = (
+                track.bbox.center.position.x,
+                track.bbox.center.position.y,
+                track.bbox.size.x,
+                track.bbox.size.y
+            )
+            
+            # Calculate bounding box corners
             tl = (int(x - w/2), int(y - h/2))
             br = (int(x + w/2), int(y + h/2))
-            annot.box_label((*tl, *br), f"{cls} {det.id}:{det.score:.3f}", col)
-            # draw mask if present
-            if det.mask and det.mask.data:
-                pts = np.array([[p.x, p.y] for p in det.mask.data], np.int32)
+            
+            # Draw bounding box and label
+            label = f"{cls} ID:{track.id} ({track.score:.2f})"
+            annot.box_label((*tl, *br), label, col)
+            
+            # Draw segmentation mask
+            if track.mask and track.mask.data:
+                pts = np.array([[p.x, p.y] for p in track.mask.data], np.int32)
                 annot.masks([pts], [col])
-            # draw keypoints if present
-            if det.keypoints and det.keypoints.data:
-                kpts = [(int(kp.point.x), int(kp.point.y), kp.id) for kp in det.keypoints.data]
-                annot.keypoints(kpts, det.keypoints.data)
-
-        # publish results
+            
+            # Draw keypoints
+            if track.keypoints and track.keypoints.data:
+                kpts = [(int(kp.point.x), int(kp.point.y), kp.id) 
+                        for kp in track.keypoints.data]
+                annot.keypoints(kpts, track.keypoints.data)
+        
+        # Publish visualization results
         out_img = annot.result()
         self.pub_img.publish(self.bridge.cv2_to_imgmsg(out_img, encoding=img_msg.encoding))
         self.pub_bb.publish(bb_markers)
         self.pub_kp.publish(kp_markers)
-
 
 def main():
     rclpy.init()
@@ -88,3 +129,6 @@ def main():
     rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()
