@@ -1,17 +1,14 @@
 import sys
 sys.path.append(f'/home/ubuntu/anaconda3/envs/mypytorch/lib/python3.8/site-packages/')
-
 import cv2
 import random
 import numpy as np
 import collections
-
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
 from cv_bridge import CvBridge
 from ultralytics.utils.plotting import Annotator, colors
-
 from sensor_msgs.msg import Image
 from visualization_msgs.msg import Marker, MarkerArray
 from yolov8_msgs.msg import Detection, DetectionArray
