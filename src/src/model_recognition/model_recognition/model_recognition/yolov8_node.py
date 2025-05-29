@@ -1,17 +1,12 @@
 import sys
 sys.path.append(f'/home/ubuntu/anaconda3/envs/mypytorch/lib/python3.8/site-packages/')
-
 from typing import Optional, NamedTuple
-
 import rclpy
 from rclpy.qos import qos_profile_sensor_data
 from rclpy.node import Node
-
 from cv_bridge import CvBridge
-
 from ultralytics import YOLO
 from ultralytics.engine.results import Results
-
 from sensor_msgs.msg import Image
 from yolov8_msgs.msg import Msgpoint, MsgBoundingBox, Mask, KeyPoint, KeyPointArray, Detection, DetectionArray
 from std_srvs.srv import SetBool
