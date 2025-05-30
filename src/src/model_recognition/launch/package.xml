@@ -2,7 +2,7 @@
 <package format="3">
   <name>launch</name>
   <version>0.0.0</version>
-  <description>YOLOv8 for ROS 2</description>
+  <description>ROS2</description>
   
   <!-- 维护者信息 -->
   <maintainer email="123@123.ru">123</maintainer>
