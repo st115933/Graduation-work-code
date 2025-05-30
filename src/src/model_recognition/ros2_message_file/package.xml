@@ -3,7 +3,7 @@
   <!-- 包的基本信息 -->
   <name>ros2_message_file</name>
   <version>0.0.0</version>
-  <description>Msgs for YOLOv8</description>
+  <description>Msgs for Ros2</description>
   
   <!-- 维护者信息 -->
   <maintainer email="123@123.ru">123</maintainer>
