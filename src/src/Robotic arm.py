@@ -180,7 +180,7 @@ class CenterSubscriber(Node):
 
         # Area 2: Upper right
         elif 613 <= cx <= 732 and 181 <= cy <= 299:
-            self.get_logger().info("In REGION 2-> moving to REGION1_ANGLES")
+            self.get_logger().info("In REGION 2-> moving to REGION2_ANGLES")
             
             # tj1
             tj1 = {
@@ -227,7 +227,7 @@ class CenterSubscriber(Node):
 
         # Area 3: Left center
         elif 493 <= cx <= 613 and 299 <= cy <= 417:
-            self.get_logger().info("In REGION 3-> moving to REGION1_ANGLES")
+            self.get_logger().info("In REGION 3-> moving to REGION3_ANGLES")
             
             # tj1
             tj1 = {
@@ -274,7 +274,7 @@ class CenterSubscriber(Node):
 
         # Area 4: Right center
         elif 613 <= cx <= 732 and 299 <= cy <= 417:
-            self.get_logger().info("In REGION 4-> moving to REGION1_ANGLES")
+            self.get_logger().info("In REGION 4-> moving to REGION4_ANGLES")
             
             # tj1
             tj1 = {
@@ -321,7 +321,7 @@ class CenterSubscriber(Node):
 
         # Area 5: Lower left
         elif 493 <= cx <= 613 and 417 <= cy <= 535:
-            self.get_logger().info("In REGION 5-> moving to REGION1_ANGLES")
+            self.get_logger().info("In REGION 5-> moving to REGION5_ANGLES")
             
             # tj1
             tj1 = {
@@ -368,7 +368,7 @@ class CenterSubscriber(Node):
 
         # Area 6: Lower right
         elif 613 <= cx <= 732 and 417 <= cy <= 535:
-            self.get_logger().info("In REGION 6 -> moving to REGION1_ANGLES")
+            self.get_logger().info("In REGION 6 -> moving to REGION6_ANGLES")
             
             # tj1
             tj1 = {
