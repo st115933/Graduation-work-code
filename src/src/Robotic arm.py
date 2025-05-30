@@ -109,6 +109,8 @@ class CenterSubscriber(Node):
                 text=True
             )
             self.get_logger().info(f"C程序已启动，PID: {self.c_process.pid}")
+
+            self.c_process.wait()
             
             if self.c_process.returncode == 0:
                 self.get_logger().info("C程序已正常完成任务")
