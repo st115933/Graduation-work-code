@@ -10,28 +10,28 @@ import json
 import time
 import subprocess
 
-# 串口配置（写死）
+# Serial port configuration (dead write)
 _PORT = "/dev/ttyUSB0"
 _BAUDRATE = 115200
 
-# 固定的速度和加速度
+# Fixed speed and acceleration
 _FIXED_SPD = 0    # 0 = 最大速度
 _FIXED_ACC = 10   # 10 * 100 步/s²
 
-# 图像分辨率（示例值，按实际修改）
-IMG_W = 800.0  # 根据代码中的区域判断调整为实际值
-IMG_H = 600.0  # 根据代码中的区域判断调整为实际值
+# Image resolution
+IMG_W = 800.0  
+IMG_H = 600.0  
 
-# C程序路径和参数（需确保a.out会自动完成任务后退出）
-AOUT_PATH = "./a.out"  # 确保a.out在当前路径或提供完整路径
-MEASURE_COUNT = 5      # 测量次数（需与C程序逻辑匹配）
-STEP_DELAY_MSEC = 1000 # 每次测量间隔(毫秒)
+# Data collection program path and parameters
+AOUT_PATH = "./a.out"  
+MEASURE_COUNT = 5      # Number of measurements
+STEP_DELAY_MSEC = 1000 # Each measurement interval (milliseconds)
 
-# 区域 1 的像素范围（示例值，按实际需求修改）
-X_MIN1, X_MAX1 = 0.0, IMG_W / 2   # 左半区
-Y_MIN1, Y_MAX1 = 0.0, IMG_H        # 整个高度
+# Pixel range of the area
+X_MIN1, X_MAX1 = 0.0, IMG_W / 2
+Y_MIN1, Y_MAX1 = 0.0, IMG_H
 
-# 区域对应的关节角度（弧度制），四个关节都要填写
+# The joint angle corresponding to the area (radian system), all four joints must be filled in
 REGION1_ANGLES = {
     "base":  0.015339808,
     "shoulder": -1.543184673,
@@ -58,15 +58,15 @@ class CenterSubscriber(Node):
     def __init__(self):
         super().__init__('center_subscriber')
 
-        # 串口初始化 & 读线程
+        # Serial port initialization & read thread
         self.ser = initialize_serial()
         threading.Thread(target=self._read_serial, daemon=True).start()
         self.get_logger().info(f"Serial initialized on {_PORT} @ {_BAUDRATE}")
         
-        # 用于存储C程序进程
+        # Used to store C program processes
         self.c_process = None
 
-        # 订阅 DetectionArray
+        # Subscribe to ros2 detectionarray
         self.create_subscription(
             DetectionArray,
             '/max_square_center',
@@ -81,8 +81,8 @@ class CenterSubscriber(Node):
 
     def move_joints(self, angles: dict):
         """
-        发送 CMD_JOINTS_RAD_CTRL 命令
-        angles: 包含 base, shoulder, elbow, hand 四个键
+        Send CMD_JOINTS_RAD_CTRL command
+        Angle: available base, shoulder, elbow, hand
         """
         cmd = {
             "T": 102,
@@ -98,9 +98,9 @@ class CenterSubscriber(Node):
         self.get_logger().info(f"[TX] {js}")
     
     def start_and_wait_c_program(self):
-        """启动C程序并等待其自动终止"""
+        """Start the C program and wait for it to terminate automatically"""
         try:
-            # 构建命令行参数
+            # Build command line parameters
             cmd = [AOUT_PATH, str(MEASURE_COUNT), str(STEP_DELAY_MSEC)]
             self.c_process = subprocess.Popen(
                 cmd, 
@@ -108,16 +108,16 @@ class CenterSubscriber(Node):
                 stderr=subprocess.PIPE,
                 text=True
             )
-            self.get_logger().info(f"C程序已启动，PID: {self.c_process.pid}")
+            self.get_logger().info(f"C program started，PID: {self.c_process.pid}")
 
             self.c_process.wait()
             
             if self.c_process.returncode == 0:
-                self.get_logger().info("C程序已正常完成任务")
+                self.get_logger().info("C program completed the task normally")
             else:
-                self.get_logger().warning(f"C程序异常终止，返回码: {self.c_process.returncode}")
+                self.get_logger().warning(f"C program terminated abnormally, return code: {self.c_process.returncode}")
         except Exception as e:
-            self.get_logger().error(f"C程序启动失败: {str(e)}")
+            self.get_logger().error(f"C program startup failed: {str(e)}")
         finally:
             self.c_process = None
 
