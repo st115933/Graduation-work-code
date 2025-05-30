@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.8)
 # Define project name
 project(launch
   VERSION 0.0.0
-  DESCRIPTION "YOLOv8 for ROS 2"
+  DESCRIPTION "ROS2"
   LANGUAGES CXX
 )
 
