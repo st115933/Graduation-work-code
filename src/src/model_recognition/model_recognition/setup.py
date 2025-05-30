@@ -26,7 +26,7 @@ configurations = {
     "zip_safe": True,
     "maintainer": '123',
     "maintainer_email": '123@123.ru',
-    "description": 'YOLOv8 for ROS 2',
+    "description": 'ROS2',
     "license": 'License declaration',  
     "tests_require": ['pytest']
 }
