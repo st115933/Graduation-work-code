@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
 # ROS 2 imports
 import rclpy
 from rclpy.node import Node
@@ -8,7 +7,6 @@ from rclpy.qos import QoSProfile
 from sensor_msgs.msg import Image
 from yolov8_msgs.msg import DetectionArray, Detection
 from cv_bridge import CvBridge, CvBridgeError
-
 # Computer vision imports
 import cv2
 import numpy as np
