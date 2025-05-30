@@ -131,11 +131,11 @@ class CenterSubscriber(Node):
         cy = det.bbox.center.position.y
         self.get_logger().info(f'center_x: {cx:.1f}, center_y: {cy:.1f}')
 
-        # 区域1：左上
+        # Area 1: Upper left
         if 493 <= cx <= 613 and 181 <= cy <= 299:
             self.get_logger().info("In REGION 1-> moving to REGION1_ANGLES")
             
-            # 执行tj1
+            # tj1
             tj1 = {
                 "base":  -0.742446701,
                 "shoulder": -1.282407939,
@@ -143,9 +143,9 @@ class CenterSubscriber(Node):
                 "hand":     1.974233274
             }
             self.move_joints(tj1)
-            time.sleep(1)
+            time.sleep(2)
             
-            # 执行tj2
+            # tj2
             tj2 = {
                 "base":  -0.740912721,
                 "shoulder": -1.006291397,
@@ -153,12 +153,12 @@ class CenterSubscriber(Node):
                 "hand":     2.172116796
             }
             self.move_joints(tj2)
-            time.sleep(1)  # 等待到位
+            time.sleep(1)
             
-            # 启动并等待C程序
+            # Start and wait for the C program
             self.start_and_wait_c_program()
             
-            # 执行tj3
+            # tj3
             tj3 = {
                 "base":  -0.742446701,
                 "shoulder": -1.282407939,
@@ -166,9 +166,9 @@ class CenterSubscriber(Node):
                 "hand":     1.974233274
             }
             self.move_joints(tj3)
-            time.sleep(1)
+            time.sleep(2)
             
-            # 执行tj4
+            # tj4
             tj4 = {
                 "base":  0.010737866,
                 "shoulder": -1.555456519,
@@ -178,11 +178,11 @@ class CenterSubscriber(Node):
             self.move_joints(tj4)
             time.sleep(15)
 
-        # 区域2：右上
+        # Area 2: Upper right
         elif 613 <= cx <= 732 and 181 <= cy <= 299:
             self.get_logger().info("In REGION 2-> moving to REGION1_ANGLES")
             
-            # 执行tj1
+            # tj1
             tj1 = {
                 "base":  0.882038953,
                 "shoulder": -1.492563307,
@@ -190,9 +190,9 @@ class CenterSubscriber(Node):
                 "hand":     2.300971182
             }
             self.move_joints(tj1)
-            time.sleep(1)
+            time.sleep(2)
             
-            # 执行tj2
+            # tj2
             tj2 = {
                 "base":  0.932660319,
                 "shoulder": -1.184233168,
@@ -200,12 +200,12 @@ class CenterSubscriber(Node):
                 "hand":     2.495786742
             }
             self.move_joints(tj2)
-            time.sleep(1)  # 等待到位
+            time.sleep(1)
             
-            # 启动并等待C程序
+            # Start and wait for the C program
             self.start_and_wait_c_program()
             
-            # 执行tj3
+            # tj3
             tj3 = {
                 "base":  0.882038953,
                 "shoulder": -1.492563307,
@@ -213,9 +213,9 @@ class CenterSubscriber(Node):
                 "hand":     2.300971182
             }
             self.move_joints(tj3)
-            time.sleep(1)
+            time.sleep(2)
             
-            # 执行tj4
+            # tj4
             tj4 = {
                 "base":  0.010737866,
                 "shoulder": -1.555456519,
@@ -225,11 +225,11 @@ class CenterSubscriber(Node):
             self.move_joints(tj4)
             time.sleep(15)
 
-        # 区域3：左中
+        # Area 3: Left center
         elif 493 <= cx <= 613 and 299 <= cy <= 417:
             self.get_logger().info("In REGION 3-> moving to REGION1_ANGLES")
             
-            # 执行tj1
+            # tj1
             tj1 = {
                 "base":  0.44792239,
                 "shoulder": -0.561436968,
@@ -237,9 +237,9 @@ class CenterSubscriber(Node):
                 "hand":     1.474155537
             }
             self.move_joints(tj1)
-            time.sleep(1)
+            time.sleep(2)
             
-            # 执行tj2
+            # tj2
             tj2 = {
                 "base":  0.434116563,
                 "shoulder": -0.516951526,
@@ -247,12 +247,12 @@ class CenterSubscriber(Node):
                 "hand":     1.831573061
             }
             self.move_joints(tj2)
-            time.sleep(1)  # 等待到位
+            time.sleep(1)
             
-            # 启动并等待C程序
+            # Start and wait for the C program
             self.start_and_wait_c_program()
             
-            # 执行tj3
+            # tj3
             tj3 = {
                 "base":  0.44792239,
                 "shoulder": -0.561436968,
@@ -260,9 +260,9 @@ class CenterSubscriber(Node):
                 "hand":     1.474155537
             }
             self.move_joints(tj3)
-            time.sleep(1)
+            time.sleep(2)
             
-            # 执行tj4
+            # tj4
             tj4 = {
                 "base":  0.010737866,
                 "shoulder": -1.555456519,
@@ -272,11 +272,11 @@ class CenterSubscriber(Node):
             self.move_joints(tj4)
             time.sleep(15)
 
-        # 区域4：右中
+        # Area 4: Right center
         elif 613 <= cx <= 732 and 299 <= cy <= 417:
             self.get_logger().info("In REGION 4-> moving to REGION1_ANGLES")
             
-            # 执行tj1
+            # tj1
             tj1 = {
                 "base":  -0.688757374,
                 "shoulder": -0.411106851,
@@ -284,9 +284,9 @@ class CenterSubscriber(Node):
                 "hand":     1.461883691
             }
             self.move_joints(tj1)
-            time.sleep(1)
+            time.sleep(2)
             
-            # 执行tj2
+            # tj2
             tj2 = {
                 "base":  -0.694893297,
                 "shoulder": -0.377359274,
@@ -294,9 +294,9 @@ class CenterSubscriber(Node):
                 "hand":     1.767145868
             }
             self.move_joints(tj2)
-            time.sleep(1)  # 等待到位
+            time.sleep(1)
             
-            # 启动并等待C程序
+            # Start and wait for the C program
             self.start_and_wait_c_program()
             
             # 执行tj3
@@ -307,9 +307,9 @@ class CenterSubscriber(Node):
                 "hand":     1.461883691
             }
             self.move_joints(tj3)
-            time.sleep(1)
+            time.sleep(2)
             
-            # 执行tj4
+            # tj4
             tj4 = {
                 "base":  0.010737866,
                 "shoulder": -1.555456519,
@@ -319,11 +319,11 @@ class CenterSubscriber(Node):
             self.move_joints(tj4)
             time.sleep(15)
 
-        # 区域5：左下
+        # Area 5: Lower left
         elif 493 <= cx <= 613 and 417 <= cy <= 535:
             self.get_logger().info("In REGION 5-> moving to REGION1_ANGLES")
             
-            # 执行tj1
+            # tj1
             tj1 = {
                 "base":  0.220893233,
                 "shoulder": -0.21322333,
@@ -331,9 +331,9 @@ class CenterSubscriber(Node):
                 "hand":     1.491029326
             }
             self.move_joints(tj1)
-            time.sleep(1)
+            time.sleep(2)
             
-            # 执行tj2
+            # tj2
             tj2 = {
                 "base":  0.208621387,
                 "shoulder": -0.200951483,
@@ -341,12 +341,12 @@ class CenterSubscriber(Node):
                 "hand":     1.808563349
             }
             self.move_joints(tj2)
-            time.sleep(1)  # 等待到位
+            time.sleep(1)
             
-            # 启动并等待C程序
+            # Start and wait for the C program
             self.start_and_wait_c_program()
             
-            # 执行tj3
+            # tj3
             tj3 = {
                 "base":  0.220893233,
                 "shoulder": -0.21322333,
@@ -354,9 +354,9 @@ class CenterSubscriber(Node):
                 "hand":     1.491029326
             }
             self.move_joints(tj3)
-            time.sleep(1)
+            time.sleep(2)
             
-            # 执行tj4
+            # tj4
             tj4 = {
                 "base":  0.010737866,
                 "shoulder": -1.555456519,
@@ -366,11 +366,11 @@ class CenterSubscriber(Node):
             self.move_joints(tj4)
             time.sleep(15)
 
-        # 区域6：右下
+        # Area 6: Lower right
         elif 613 <= cx <= 732 and 417 <= cy <= 535:
             self.get_logger().info("In REGION 6 -> moving to REGION1_ANGLES")
             
-            # 执行tj1
+            # tj1
             tj1 = {
                 "base":  -0.423378697,
                 "shoulder": -0.049087385,
@@ -378,9 +378,9 @@ class CenterSubscriber(Node):
                 "hand":     1.503301172
             }
             self.move_joints(tj1)
-            time.sleep(1)
+            time.sleep(2)
             
-            # 执行tj2
+            # tj2
             tj2 = {
                 "base":  -0.435650544,
                 "shoulder": -0.032213597,
@@ -388,12 +388,12 @@ class CenterSubscriber(Node):
                 "hand":     1.759475964
             }
             self.move_joints(tj2)
-            time.sleep(1)  # 等待到位
+            time.sleep(1)
             
-            # 启动并等待C程序
+            # Start and wait for the C program
             self.start_and_wait_c_program()
             
-            # 执行tj3
+            # tj3
             tj3 = {
                 "base":  -0.423378697,
                 "shoulder": -0.049087385,
@@ -401,9 +401,9 @@ class CenterSubscriber(Node):
                 "hand":     1.503301172
             }
             self.move_joints(tj3)
-            time.sleep(1)
+            time.sleep(2)
             
-            # 执行tj4
+            # tj4
             tj4 = {
                 "base":  0.010737866,
                 "shoulder": -1.555456519,
