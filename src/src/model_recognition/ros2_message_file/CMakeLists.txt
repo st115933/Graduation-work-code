@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.8)
 # Define the project name and specify the language to be used as C and C++
 project(ros2_message_file
   VERSION 0.0.0
-  DESCRIPTION "Msgs for YOLOv8"
+  DESCRIPTION "Msgs for Ros2"
   LANGUAGES C CXX
 )
 
