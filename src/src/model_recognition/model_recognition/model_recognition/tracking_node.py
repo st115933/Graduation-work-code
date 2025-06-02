@@ -1,130 +1,214 @@
-import sys
-sys.path.append(f'/home/ubuntu/anaconda3/envs/mypytorch/lib/python3.8/site-packages/')
-import numpy as np
+#!/usr/bin/env python3
 import rclpy
 from rclpy.node import Node
-from rclpy.qos import qos_profile_sensor_data
+from rclpy.parameter import Parameter
+from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
+import cv2
+import numpy as np
+from collections import deque
+import os
+import yaml
+import sys
+
+# Add Ultralytics library path
+sys.path.append(f'/home/ubuntu/anaconda3/envs/mypytorch/lib/python3.8/site-packages/')
 from ultralytics.trackers import BOTSORT, BYTETracker
 from ultralytics.trackers.basetrack import BaseTrack
 from ultralytics.utils import yaml_load, IterableSimpleNamespace
-from ultralytics.utils.checks import check_yaml, check_requirements
+from ultralytics.utils.checks import check_yaml
 from ultralytics.engine.results import Boxes
-from sensor_msgs.msg import Image
 from yolov8_msgs.msg import DetectionArray, Detection
-from std_msgs.msg import Header
-from std_srvs.srv import SetBool
 import collections
-
 
 class TrackingNode(Node):
     def __init__(self):
-        super().__init__('tracking_node')
-
-        # parameters
-        self.declare_parameter('tracker_config', 'bytetrack.yaml')
-        yaml_file = self.get_parameter('tracker_config').get_parameter_value().string_value
-
-        # initialize utilities
+        super().__init__('object_tracking_node')
+        
+        # Declare and retrieve tracker configuration parameter
+        self.declare_parameter('tracker_config', '')
+        tracker_config_path = self.get_parameter('tracker_config').get_parameter_value().string_value
+        
+        # Initialize tracker
+        self.tracker = self._init_tracker(tracker_config_path)
+        
+        # Initialize CvBridge and detection result buffer
         self.bridge = CvBridge()
-        self.tracker = self._init_tracker(yaml_file)
-
-        # buffers
-        self.det_buffer = collections.deque(maxlen=10)  # Cache the last 10 test results
-
-        # subscribers
-        self.create_subscription(
-            Image, 'image_raw', self._on_image, qos_profile_sensor_data)
-        self.create_subscription(
-            DetectionArray, 'detections', self._on_detections, 10)
-
-        # publisher
-        self._pub = self.create_publisher(DetectionArray, 'tracking', 10)
+        self.det_buffer = collections.deque(maxlen=10)  # Store the last 10 detection results
+        
+        # Time synchronization threshold (seconds)
+        self.sync_threshold = 0.1
+        
+        # Create subscribers and publisher
+        self.image_sub = self.create_subscription(
+            Image, 
+            'image_raw', 
+            self._on_image, 
+            10
+        )
+        
+        self.detections_sub = self.create_subscription(
+            DetectionArray,
+            'detections',
+            self._on_detections,
+            10
+        )
+        
+        self.tracking_pub = self.create_publisher(
+            DetectionArray,
+            'tracking',
+            10
+        )
+        
+        self.get_logger().info("Object tracking node initialized")
 
     def _init_tracker(self, cfg_path: str) -> BaseTrack:
-        # ensure dependencies
-        check_requirements('lap')
-        cfg = check_yaml(cfg_path)
-        params = IterableSimpleNamespace(**yaml_load(cfg))
-        cls = BYTETracker if params.tracker_type == 'bytetrack' else BOTSORT
-        return cls(args=params, frame_rate=params.frame_rate if hasattr(params, 'frame_rate') else 1)
+        """Initialize Ultralytics tracker based on configuration file"""
+        if not os.path.exists(cfg_path):
+            self.get_logger().error(f"Tracker config file not found: {cfg_path}")
+            return None
+        
+        try:
+            cfg = check_yaml(cfg_path)
+            params = IterableSimpleNamespace(**yaml_load(cfg))
+            tracker_type = params.tracker_type.lower()
+            
+            self.get_logger().info(f"Initializing {tracker_type} tracker")
+            
+            if tracker_type == 'bytetrack':
+                return BYTETracker(args=params, frame_rate=params.frame_rate)
+            elif tracker_type == 'botsort':
+                return BOTSORT(args=params, frame_rate=params.frame_rate)
+            else:
+                self.get_logger().error(f"Unknown tracker type: {tracker_type}")
+                return None
+        except Exception as e:
+            self.get_logger().error(f"Error initializing tracker: {e}")
+            return None
 
     def _on_detections(self, msg: DetectionArray):
-        # Add test results to the buffer
+        """Process received detection results"""
+        # Store detection results in buffer
         self.det_buffer.append(msg)
+        stamp = msg.header.stamp
+        self.get_logger().debug(f"Received detections at {stamp.sec}.{stamp.nanosec}")
 
     def _on_image(self, img_msg: Image):
+        """Process received image"""
         if not self.det_buffer:
             return
-
-        # Get the timestamp of the image
+        
+        # Get image timestamp (in float format)
         img_time = img_msg.header.stamp.sec + img_msg.header.stamp.nanosec * 1e-9
-
-        # Find the test result closest to the image timestamp
+        
+        # Find the closest detection in time
         best_det = min(
             self.det_buffer,
             key=lambda det: abs((det.header.stamp.sec + det.header.stamp.nanosec * 1e-9) - img_time)
         )
-
-        # If the time difference exceeds the threshold value, the processing is skipped
-        tolerance = 0.1  # Tolerance threshold (seconds)
+        
+        # Calculate time difference
         det_time = best_det.header.stamp.sec + best_det.header.stamp.nanosec * 1e-9
-        if abs(det_time - img_time) > tolerance:
-            self.get_logger().warn("No detection within tolerance for the current image.")
-            return
-
-        # Convert image cv
-        cv_img = self.bridge.imgmsg_to_cv2(img_msg)
-
-        # Build a detection matrix
-        dets = []
-        for det in best_det.detections:
-            x, y = det.bbox.center.position.x, det.bbox.center.position.y
-            w, h = det.bbox.size.x, det.bbox.size.y
-            x1, y1 = x - w / 2, y - h / 2
-            x2, y2 = x + w / 2, y + h / 2
-            dets.append([x1, y1, x2, y2, det.score, det.class_id])
-
-        if not dets:
-            return
-
-        dets_arr = Boxes(np.array(dets), (img_msg.height, img_msg.width))
-        tracks = self.tracker.update(dets_arr, cv_img)
-
-        # Generate tracking results
-        out_msg = DetectionArray()
-        out_msg.header = best_det.header  # Use the timestamp of the test result
-
-        for tr in tracks:
-            # tr: [x1, y1, x2, y2, score, class_id, track_id]
-            bbox = Boxes(tr[:6], (img_msg.height, img_msg.width))
-            idx = int(tr[6]) if len(tr) > 6 else None
-
-            base_det = best_det.detections[idx] if idx is not None else Detection()
-            new_det = Detection(
-                class_id=base_det.class_id,
-                class_name=base_det.class_name,
-                score=base_det.score,
-                bbox=base_det.bbox,
-                mask=base_det.mask,
-                keypoints=base_det.keypoints,
+        delta = abs(det_time - img_time)
+        
+        # Check if the time difference is within the threshold
+        if delta > self.sync_threshold:
+            self.get_logger().warn(
+                f"Large time delta between image and detections: {delta:.3f}s > {self.sync_threshold}s"
             )
-            # Update the bounding box
-            cx, cy, bw, bh = bbox.xywh[0]
-            new_det.bbox.center.position.x = float(cx)
-            new_det.bbox.center.position.y = float(cy)
-            new_det.bbox.size.x = float(bw)
-            new_det.bbox.size.y = float(bh)
-            new_det.id = str(int(bbox.id)) if bbox.is_track else ''
+            return
+        
+        try:
+            # Convert image format
+            cv_image = self.bridge.imgmsg_to_cv2(img_msg, desired_encoding='bgr8')
+        except Exception as e:
+            self.get_logger().error(f"Error converting image: {e}")
+            return
+        
+        # Prepare input for tracker
+        dets = []
+        for detection in best_det.detections:
+            # Get bounding box information
+            bbox = detection.bbox
+            cx = bbox.center.position.x
+            cy = bbox.center.position.y
+            width = bbox.size.x
+            height = bbox.size.y
+            
+            # Convert to top-left and bottom-right coordinates
+            x1 = cx - width / 2
+            y1 = cy - height / 2
+            x2 = x1 + width
+            y2 = y1 + height
+            
+            # Get detection score and class ID
+            score = detection.score
+            class_id = detection.class_id
+            
+            dets.append([x1, y1, x2, y2, score, class_id])
+        
+        # Convert to numpy array
+        dets_arr = np.array(dets)
+        
+        # Return directly if no detections are available
+        if len(dets_arr) == 0:
+            return
+            
+        # Convert to Boxes object
+        dets_boxes = Boxes(dets_arr, (img_msg.height, img_msg.width))
+        
+        # Update tracker
+        if self.tracker is not None:
+            # Call tracker update
+            online_targets = self.tracker.update(dets_boxes, cv_image)
+            
+            # Prepare message for publishing
+            tracking_msg = DetectionArray()
+            tracking_msg.header = img_msg.header  # Use the image's timestamp
+            
+            for target in online_targets:
+                # Note: Ultralytics tracker returns 7 values
+                if len(target) < 7:
+                    continue
+                    
+                x1, y1, x2, y2, score, class_id, track_id = target[:7]
+                
+                # Create detection message
+                detection = Detection()
+                detection.id = str(int(track_id))
+                
+                # Set bounding box
+                detection.bbox.center.position.x = (x1 + x2) / 2
+                detection.bbox.center.position.y = (y1 + y2) / 2
+                detection.bbox.size.x = x2 - x1
+                detection.bbox.size.y = y2 - y1
+                
+                # Set classification information
+                detection.score = float(score)
+                detection.class_id = str(int(class_id))
+                
+                tracking_msg.detections.append(detection)
+            
+            # Publish tracking results
+            self.tracking_pub.publish(tracking_msg)
+            self.get_logger().info(f"Published {len(tracking_msg.detections)} tracked objects")
 
-            out_msg.detections.append(new_det)
+    def destroy_node(self):
+        self.get_logger().info("Shutting down tracking node")
+        super().destroy_node()
 
-        self._pub.publish(out_msg)
 
-
-def main():
-    rclpy.init()
+def main(args=None):
+    rclpy.init(args=args)
     node = TrackingNode()
-    rclpy.spin(node)
-    node.destroy_node()
-    rclpy.shutdown()
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
+
+
+if __name__ == '__main__':
+    main()
