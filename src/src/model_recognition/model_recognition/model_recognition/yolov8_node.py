@@ -136,10 +136,11 @@ class Yolov8Node(Node):
                     width = xmax - xmin
                     height = ymax - ymin
                     
-                    bbox.center.position.x = center_x
-                    bbox.center.position.y = center_y
-                    bbox.size.x = width
-                    bbox.size.y = height
+                    bbox.center_position_x = center_x
+                    bbox.center_position_y = center_y
+                    bbox.center_theta = 0.0
+                    bbox.size_x = width
+                    bbox.size_y = height
                     detection.bbox = bbox
                     
                     # Process mask 
