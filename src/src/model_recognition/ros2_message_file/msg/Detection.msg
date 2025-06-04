@@ -8,10 +8,10 @@ float64 score
 # Tracking name
 string id
 
-# Bounding box (enclosing objects in pixels)
+# Bounding box
 ros2_message_file/MsgBoundingBox bbox
 
-# Split mask
+# mask
 ros2_message_file/Mask mask
 
 # Key points
