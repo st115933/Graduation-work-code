@@ -176,7 +176,7 @@ class CenterSubscriber(Node):
                 "hand":     1.520174961
             }
             self.move_joints(tj4)
-            time.sleep(15)
+            time.sleep(10)
 
         # Area 2: Upper right
         elif 613 <= cx <= 732 and 181 <= cy <= 299:
@@ -223,7 +223,7 @@ class CenterSubscriber(Node):
                 "hand":     1.520174961
             }
             self.move_joints(tj4)
-            time.sleep(15)
+            time.sleep(10)
 
         # Area 3: Left center
         elif 493 <= cx <= 613 and 299 <= cy <= 417:
@@ -270,7 +270,7 @@ class CenterSubscriber(Node):
                 "hand":     1.520174961
             }
             self.move_joints(tj4)
-            time.sleep(15)
+            time.sleep(10)
 
         # Area 4: Right center
         elif 613 <= cx <= 732 and 299 <= cy <= 417:
@@ -317,7 +317,7 @@ class CenterSubscriber(Node):
                 "hand":     1.520174961
             }
             self.move_joints(tj4)
-            time.sleep(15)
+            time.sleep(10)
 
         # Area 5: Lower left
         elif 493 <= cx <= 613 and 417 <= cy <= 535:
@@ -364,7 +364,7 @@ class CenterSubscriber(Node):
                 "hand":     1.520174961
             }
             self.move_joints(tj4)
-            time.sleep(15)
+            time.sleep(10)
 
         # Area 6: Lower right
         elif 613 <= cx <= 732 and 417 <= cy <= 535:
@@ -411,7 +411,7 @@ class CenterSubscriber(Node):
                 "hand":     1.520174961
             }
             self.move_joints(tj4)
-            time.sleep(15)
+            time.sleep(10)
 
 def main(args=None):
     rclpy.init(args=args)
