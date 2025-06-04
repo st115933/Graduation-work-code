@@ -17,8 +17,6 @@ find_package(geometry_msgs REQUIRED)
 # ros2 message
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Msgpoint.msg"
-  "msg/MsgVector.msg"
-  "msg/MsgPose.msg"
   "msg/MsgBoundingBox.msg"
   "msg/Mask.msg"
   "msg/KeyPoint.msg"
